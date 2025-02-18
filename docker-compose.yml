@@ -1,0 +1,73 @@
+llversion: "3"
+
+services:
+  monchaindnode0:
+    container_name: monchaindnode0
+    image: "monchaind/node"
+    ports:
+      - "26657:26657"
+      - "8545:8545"
+      - "8546:8546"
+      - "8125:8125"
+    environment:
+      - ID=0
+      - LOG=${LOG:-monchaind.log}
+    volumes:
+      - ./localnet-setup/node0/monchaind:/ethermint:Z
+    networks:
+      - localnet
+    entrypoint: "bash start-docker.sh"
+
+  monchaindnode1:
+    container_name: monchaindnode1
+    image: "monchaind/node"
+    ports:
+      - "26658:26657"
+      - "8555:8545"
+      - "8556:8546"
+      - "8126:8125"
+    environment:
+      - ID=1
+      - LOG=${LOG:-monchaind.log}
+    volumes:
+      - ./localnet-setup/node1/monchaind:/ethermint:Z
+    networks:
+      - localnet
+    entrypoint: "bash start-docker.sh"
+
+  monchaindnode2:
+    container_name: monchaindnode2
+    image: "monchaind/node"
+    environment:
+      - ID=2
+      - LOG=${LOG:-monchaind.log}
+    ports:
+      - "26659:26657"
+      - "8565:8545"
+      - "8566:8546"
+      - "8127:8125"
+    volumes:
+      - ./localnet-setup/node2/monchaind:/ethermint:Z
+    networks:
+      - localnet
+    entrypoint: "bash start-docker.sh"
+
+  monchaindnode3:
+    container_name: monchaindnode3
+    image: "monchaind/node"
+    environment:
+      - ID=3
+      - LOG=${LOG:-monchaind.log}
+    ports:
+      - "26660:26657"
+      - "8575:8545"
+      - "8576:8546"
+      - "8128:8125"
+    volumes:
+      - ./localnet-setup/node3/monchaind:/ethermint:Z
+    networks:
+      - localnet
+    entrypoint: "bash start-docker.sh"
+
+networks:
+  localnet:
