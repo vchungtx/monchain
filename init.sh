@@ -1,9 +1,9 @@
 #!/bin/bash
 
 KEY="mykey"
-CHAINID="monchain_3004-1"
-MONIKER="localtestnet"
-KEYRING="test"
+CHAINID="monchain_16789-1"
+MONIKER="validator-1"
+KEYRING="file"
 KEYALGO="eth_secp256k1"
 LOGLEVEL="info"
 # trace evm
@@ -27,20 +27,20 @@ monchaind keys add $KEY --keyring-backend $KEYRING --algo $KEYALGO
 # Set moniker and chain-id for Ethermint (Moniker can be anything, chain-id must be an integer)
 monchaind init $MONIKER --chain-id $CHAINID
 
-# Change parameter token denominations to aphoton
-cat $HOME/.monchaind/config/genesis.json | jq '.app_state["staking"]["params"]["bond_denom"]="aphoton"' > $HOME/.monchaind/config/tmp_genesis.json && mv $HOME/.monchaind/config/tmp_genesis.json $HOME/.monchaind/config/genesis.json
-cat $HOME/.monchaind/config/genesis.json | jq '.app_state["crisis"]["constant_fee"]["denom"]="aphoton"' > $HOME/.monchaind/config/tmp_genesis.json && mv $HOME/.monchaind/config/tmp_genesis.json $HOME/.monchaind/config/genesis.json
-cat $HOME/.monchaind/config/genesis.json | jq '.app_state["gov"]["deposit_params"]["min_deposit"][0]["denom"]="aphoton"' > $HOME/.monchaind/config/tmp_genesis.json && mv $HOME/.monchaind/config/tmp_genesis.json $HOME/.monchaind/config/genesis.json
-cat $HOME/.monchaind/config/genesis.json | jq '.app_state["mint"]["params"]["mint_denom"]="aphoton"' > $HOME/.monchaind/config/tmp_genesis.json && mv $HOME/.monchaind/config/tmp_genesis.json $HOME/.monchaind/config/genesis.json
+# Change parameter token denominations to amon
+cat $HOME/.monchaind/config/genesis.json | jq '.app_state["staking"]["params"]["bond_denom"]="amon"' > $HOME/.monchaind/config/tmp_genesis.json && mv $HOME/.monchaind/config/tmp_genesis.json $HOME/.monchaind/config/genesis.json
+cat $HOME/.monchaind/config/genesis.json | jq '.app_state["crisis"]["constant_fee"]["denom"]="amon"' > $HOME/.monchaind/config/tmp_genesis.json && mv $HOME/.monchaind/config/tmp_genesis.json $HOME/.monchaind/config/genesis.json
+cat $HOME/.monchaind/config/genesis.json | jq '.app_state["gov"]["deposit_params"]["min_deposit"][0]["denom"]="amon"' > $HOME/.monchaind/config/tmp_genesis.json && mv $HOME/.monchaind/config/tmp_genesis.json $HOME/.monchaind/config/genesis.json
+cat $HOME/.monchaind/config/genesis.json | jq '.app_state["mint"]["params"]["mint_denom"]="amon"' > $HOME/.monchaind/config/tmp_genesis.json && mv $HOME/.monchaind/config/tmp_genesis.json $HOME/.monchaind/config/genesis.json
 
 # Set gas limit in genesis
 cat $HOME/.monchaind/config/genesis.json | jq '.consensus_params["block"]["max_gas"]="20000000"' > $HOME/.monchaind/config/tmp_genesis.json && mv $HOME/.monchaind/config/tmp_genesis.json $HOME/.monchaind/config/genesis.json
 
 # Allocate genesis accounts (cosmos formatted addresses)
-monchaind add-genesis-account $KEY 100000000000000000000000000aphoton --keyring-backend $KEYRING
+monchaind add-genesis-account $KEY 5000000000000000000000000000amon --keyring-backend $KEYRING
 
 # Sign genesis transaction
-monchaind gentx $KEY 1000000000000000000000aphoton --keyring-backend $KEYRING --chain-id $CHAINID
+monchaind gentx $KEY 1000000000000000000000amon --keyring-backend $KEYRING --chain-id $CHAINID
 
 # Collect genesis tx
 monchaind collect-gentxs
@@ -87,4 +87,4 @@ if [[ $1 == "pending" ]]; then
 fi
 
 # Start the node (remove the --pruning=nothing flag if historical queries are not needed)
-monchaind start --metrics --pruning=nothing --evm.tracer=json $TRACE --log_level $LOGLEVEL --minimum-gas-prices=0.0001aphoton --json-rpc.api eth,txpool,personal,net,debug,web3,miner --api.enable
+#monchaind start --metrics --pruning=nothing --evm.tracer=json $TRACE --log_level $LOGLEVEL --minimum-gas-prices=0.0001amon --json-rpc.api eth,txpool,personal,net,debug,web3,miner --api.enable

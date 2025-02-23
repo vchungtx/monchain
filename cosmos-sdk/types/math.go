@@ -35,3 +35,11 @@ const (
 func (ip IntProto) String() string {
 	return ip.Int.String()
 }
+
+func PowInt(base, exp int64) int64 {
+	result := int64(1)
+	for i := int64(0); i < exp; i++ {
+		result *= base
+	}
+	return result
+}

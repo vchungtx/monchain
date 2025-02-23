@@ -18,14 +18,14 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper, ic types.InflationCalculatio
 	params := k.GetParams(ctx)
 
 	// recalculate inflation rate
-	totalStakingSupply := k.StakingTokenSupply(ctx)
-	bondedRatio := k.BondedRatio(ctx)
-	minter.Inflation = ic(ctx, minter, params, bondedRatio)
-	minter.AnnualProvisions = minter.NextAnnualProvisions(params, totalStakingSupply)
+	//totalStakingSupply := k.StakingTokenSupply(ctx)
+	//bondedRatio := k.BondedRatio(ctx)
+	//minter.Inflation = ic(ctx, minter, params, bondedRatio)
+	//minter.AnnualProvisions = minter.NextAnnualProvisions(params, totalStakingSupply)
 	k.SetMinter(ctx, minter)
 
 	// mint coins, update supply
-	mintedCoin := minter.BlockProvision(params)
+	mintedCoin := minter.BlockProvision(params, ctx.BlockHeight())
 	mintedCoins := sdk.NewCoins(mintedCoin)
 
 	err := k.MintCoins(ctx, mintedCoins)
@@ -33,8 +33,16 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper, ic types.InflationCalculatio
 		panic(err)
 	}
 
+	burnAmount := sdk.NewDecFromInt(mintedCoin.Amount).Mul(sdk.NewDecWithPrec(5, 2)).TruncateInt()
+	burnedCoin := sdk.NewCoin(mintedCoin.Denom, burnAmount)
+	burnedCoins := sdk.NewCoins(burnedCoin)
+	err = k.BurnCoins(ctx, burnedCoins)
+	if err != nil {
+		panic(err)
+	}
+	remainingCoins := mintedCoins.Sub(burnedCoin)
 	// send the minted coins to the fee collector account
-	err = k.AddCollectedFees(ctx, mintedCoins)
+	err = k.AddCollectedFees(ctx, remainingCoins)
 	if err != nil {
 		panic(err)
 	}
@@ -46,10 +54,19 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper, ic types.InflationCalculatio
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			types.EventTypeMint,
-			sdk.NewAttribute(types.AttributeKeyBondedRatio, bondedRatio.String()),
-			sdk.NewAttribute(types.AttributeKeyInflation, minter.Inflation.String()),
-			sdk.NewAttribute(types.AttributeKeyAnnualProvisions, minter.AnnualProvisions.String()),
+			//sdk.NewAttribute(types.AttributeKeyBondedRatio, bondedRatio.String()),
+			//sdk.NewAttribute(types.AttributeKeyInflation, minter.Inflation.String()),
+			//sdk.NewAttribute(types.AttributeKeyAnnualProvisions, minter.AnnualProvisions.String()),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, mintedCoin.Amount.String()),
+		),
+	)
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypeBurnMinted,
+			//sdk.NewAttribute(types.AttributeKeyBondedRatio, bondedRatio.String()),
+			//sdk.NewAttribute(types.AttributeKeyInflation, minter.Inflation.String()),
+			//sdk.NewAttribute(types.AttributeKeyAnnualProvisions, minter.AnnualProvisions.String()),
+			sdk.NewAttribute(sdk.AttributeKeyAmount, burnedCoin.Amount.String()),
 		),
 	)
 }

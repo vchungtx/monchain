@@ -132,5 +132,22 @@ func DeductFees(bankKeeper types.BankKeeper, ctx sdk.Context, acc types.AccountI
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, err.Error())
 	}
 
+	burnedFees := sdk.NewCoins()
+
+	for _, coin := range fees {
+		burnAmount := coin.Amount.QuoRaw(2) //  50%
+		burnedFees = burnedFees.Add(sdk.NewCoin(coin.Denom, burnAmount))
+	}
+	err = bankKeeper.BurnCoins(ctx, types.FeeCollectorName, burnedFees)
+	if err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "failed to burn fees: %s", err)
+	}
+
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypeBurnFee,
+			sdk.NewAttribute(sdk.AttributeKeyAmount, burnedFees[0].Amount.String()),
+		),
+	)
 	return nil
 }

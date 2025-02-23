@@ -75,7 +75,13 @@ func (m Minter) NextAnnualProvisions(_ Params, totalSupply math.Int) sdk.Dec {
 
 // BlockProvision returns the provisions for a block based on the annual
 // provisions rate.
-func (m Minter) BlockProvision(params Params) sdk.Coin {
-	provisionAmt := m.AnnualProvisions.QuoInt(sdk.NewInt(int64(params.BlocksPerYear)))
-	return sdk.NewCoin(params.MintDenom, provisionAmt.TruncateInt())
+func (m Minter) BlockProvision(params Params, currentBlock int64) sdk.Coin {
+	//provisionAmt := m.AnnualProvisions.QuoInt(sdk.NewInt(int64(params.BlocksPerYear)))
+	//return sdk.NewCoin(params.MintDenom, provisionAmt.TruncateInt())
+	halvingInterval := int64(25228800) * 4
+	initialReward := sdk.NewInt(100).Mul(sdk.NewInt(1_000_000_000_000_000_000)) // 100 * 10^18
+	halvingCount := currentBlock / halvingInterval
+	halvingFactor := sdk.PowInt(2, halvingCount)
+	halvedAmount := initialReward.Quo(sdk.NewInt(halvingFactor))
+	return sdk.NewCoin(params.MintDenom, halvedAmount)
 }

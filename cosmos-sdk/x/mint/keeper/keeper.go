@@ -105,6 +105,16 @@ func (k Keeper) MintCoins(ctx sdk.Context, newCoins sdk.Coins) error {
 	return k.bankKeeper.MintCoins(ctx, types.ModuleName, newCoins)
 }
 
+
+func (k Keeper) BurnCoins(ctx sdk.Context, amt sdk.Coins) error {
+	if amt.Empty() {
+		// skip as no coins need to be burned
+		return nil
+	}
+
+	return k.bankKeeper.BurnCoins(ctx, types.ModuleName, amt)
+}
+
 // AddCollectedFees implements an alias call to the underlying supply keeper's
 // AddCollectedFees to be used in BeginBlocker.
 func (k Keeper) AddCollectedFees(ctx sdk.Context, fees sdk.Coins) error {
